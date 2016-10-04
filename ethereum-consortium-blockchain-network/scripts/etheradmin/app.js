@@ -45,7 +45,6 @@ function getNodeInfo(hostName) {
       var web3nodeInfo = new Web3(new Web3.providers.HttpProvider("http://" + hostName + ":8545"));
       peerCount = web3nodeInfo.net.peerCount;
       blockNumber = web3nodeInfo.eth.blockNumber;
-
     }
     catch(err) {
       console.log(err);
@@ -74,7 +73,9 @@ function getNodesInfo() {
   nodeInfoArray;
 }
 
-setInterval(getNodesInfo, 30000);
+// We scale the polling interval with the number of nodes we have to check
+var web3PollingInterval = (numMNNodes + numTXNodes) * 5000;
+setInterval(getNodesInfo, web3PollingInterval);
 
 // Check if we've mined a block yet
 function minedABlock () {
