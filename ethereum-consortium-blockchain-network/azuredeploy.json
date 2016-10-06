@@ -5,35 +5,37 @@
     "namePrefix" : {
       "type": "string",
       "metadata": {
-        "description": "String used as a base for naming resources (9 characters or less).  A unique hash is prepended to the string for some resources, while resource-specific information is appended.  (alphanumeric characters only, special characters will be removed)"
+        "description": "String used as a base for naming resources (6 characters or less).  A unique hash is prepended to the string for some resources, while resource-specific information is appended.  (alphanumeric characters only)"
       },
-      "maxLength": 9
+      "maxLength": 6
     },
     "adminUsername": {
       "type": "string",
       "defaultValue": "gethadmin",
       "metadata": {
-        "description": "Administrator username of each deployed VM (alphanumeric characters only, special characters will be removed)"
+        "description": "Administrator username of each deployed VM (alphanumeric characters only)"
       }
     },
     "adminPassword": {
       "type": "securestring",
       "metadata": {
-        "description": "Administrator password for each deployed VM  (alphanumeric characters only, special characters will be removed)"
-      }
+        "description": "Administrator password for each deployed VM"
+      },
+      "minLength": 12
     },
     "ethereumAccountPsswd": {
       "type": "securestring",
       "metadata": {
-        "description": "Administrator password used to secure the Ethereum account in geth. (alphanumeric characters only, special characters will be removed)"
-      }
+        "description": "Password used to secure the default Ethereum account that will be generated"
+      },
+      "minLength": 12
     },
     "ethereumAccountPassphrase": {
       "type": "securestring",
       "metadata": {
-        "description": "Used to generate the private key associated with the Ethereum account (supply a strong alphanumeric passphrase min 9 characters, special characters will be removed)"
+        "description": "Password used to generate the private key associated with the default Ethereum account that is generated.  Consider a password with sufficient randomness to ensure a strong private key"
       },
-      "minLength": 9
+      "minLength": 12
     },
     "ethereumNetworkID": {
       "type": "int",
@@ -158,12 +160,7 @@
     }
   },
   "variables": {
-    "namePrefixClean": "[replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(parameters('namePrefix'),' ',''),'$',''),'#',''),'[',''),'!',''),'|',''),';',''),'{',''),']',''),'}',''),'(',''),')',''),'~','')]",
-    "adminUsernameClean": "[replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(parameters('adminUsername'),' ',''),'$',''),'#',''),'[',''),'!',''),'|',''),';',''),'{',''),']',''),'}',''),'(',''),')',''),'~','')]",
-    "adminPasswordClean": "[replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(parameters('adminPassword'),' ',''),'$',''),'#',''),'[',''),'!',''),'|',''),';',''),'{',''),']',''),'}',''),'(',''),')',''),'~','')]",
-    "ethereumAccountPsswdClean": "[replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(parameters('ethereumAccountPsswd'),' ',''),'$',''),'#',''),'[',''),'!',''),'|',''),';',''),'{',''),']',''),'}',''),'(',''),')',''),'~','')]",
-    "ethereumAccountPassphraseClean": "[replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(parameters('ethereumAccountPassphrase'),' ',''),'$',''),'#',''),'[',''),'!',''),'|',''),';',''),'{',''),']',''),'}',''),'(',''),')',''),'~','')]",
-    "namingInfix": "[toLower(substring(concat(variables('namePrefixClean'), uniqueString(resourceGroup().id)), 0, 9))]",
+    "namingInfix": "[toLower(substring(concat(parameters('namePrefix'), uniqueString(resourceGroup().id)), 0, 9))]",
     "storageAccountType": "Standard_LRS",
     "availabilitySetName": "[concat(variables('namingInfix'), 'AvSet')]",
     "httpPort": 80,
@@ -520,8 +517,8 @@
         },
         "osProfile": {
           "computerName": "[concat(variables('txVMNamePrefix'), copyIndex())]",
-          "adminUsername": "[variables('adminUsernameClean')]",
-          "adminPassword": "[variables('adminPasswordClean')]"
+          "adminUsername": "[parameters('adminUsername')]",
+          "adminPassword": "[parameters('adminPassword')]"
         },
         "storageProfile": {
           "imageReference": "[variables('ubuntuImage')]",
@@ -562,8 +559,8 @@
         },
         "osProfile": {
           "computerName": "[concat(variables('mnVMNamePrefix'), copyIndex())]",
-          "adminUsername": "[variables('adminUsernameClean')]",
-          "adminPassword": "[variables('adminPasswordClean')]"
+          "adminUsername": "[parameters('adminUsername')]",
+          "adminPassword": "[parameters('adminPassword')]"
         },
         "storageProfile": {
           "imageReference": "[variables('ubuntuImage')]",
@@ -606,9 +603,9 @@
           "mnVMNamePrefix":{"value": "[variables('mnVMNamePrefix')]"},
           "numMNNodes":{"value": "[variables('numMNNodes')]"},
           "artifactsLocationURL":{"value": "[variables('artifactsLocationURL')]"},
-          "adminUsername":{"value": "[variables('adminUsernameClean')]"},
-          "ethereumAccountPsswd":{"value": "[variables('ethereumAccountPsswdClean')]"},
-          "ethereumAccountPassphrase": {"value": "[variables('ethereumAccountPassphraseClean')]"},
+          "adminUsername":{"value": "[parameters('adminUsername')]"},
+          "ethereumAccountPsswd":{"value": "[parameters('ethereumAccountPsswd')]"},
+          "ethereumAccountPassphrase": {"value": "[parameters('ethereumAccountPassphrase')]"},
           "ethereumNetworkID":{"value": "[parameters('ethereumNetworkID')]"},
           "gethIPCPort":{"value": "[variables('gethIPCPort')]"}
         }
