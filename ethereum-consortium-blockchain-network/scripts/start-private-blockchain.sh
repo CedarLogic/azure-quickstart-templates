@@ -9,7 +9,31 @@ PASSWD=$2;
 
 # Load config variables
 if [ ! -e $GETH_CFG ]; then echo "Config file not found. Exiting"; exit 1; fi
-. $GETH_CFG;
+. $GETH_CFG
+
+# Ensure that at least one bootnode is up
+# If not, wait 5 seconds then retry
+FOUND_BOOTNODE=false
+while sleep 5; do
+	for i in `seq 0 $(($NUM_BOOT_NODES - 1))`; do
+		if [ `hostname` = $MN_NODE_PREFIX$i ]; then
+			continue
+		fi
+
+		LOOKUP=`nslookup $MN_NODE_PREFIX$i | grep "can't find"`
+		if [ -z $LOOKUP ]; then
+			FOUND_BOOTNODE=true
+			break
+		fi
+	done
+
+	if [ "$FOUND_BOOTNODE" = true ]; then
+		break
+	fi
+done
+
+# Replace hostnames in config file with IP addresses
+BOOTNODE_URLS=`perl -pe 's/#(.*?)#/qx\/nslookup $1| egrep "Address: [0-9]"| cut -d" " -f2 | xargs echo -n\//ge' geth.cfg|grep BOOTNODE_URLS|cut -d'=' -f2`
 
 ETHERADMIN_LOG_FILE_PATH="$HOMEDIR/etheradmin.log";
 

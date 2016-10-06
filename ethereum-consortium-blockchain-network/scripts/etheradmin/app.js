@@ -91,6 +91,7 @@ function getNodesInfo() {
 }
 
 // We scale the polling interval with the number of nodes we have to check
+
 var web3PollingInterval = (numMNNodes + numTXNodes) * 2000;
 setInterval(getNodesInfo, web3PollingInterval);
 
