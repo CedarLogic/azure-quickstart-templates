@@ -61,7 +61,7 @@
         "description": "Number of mining nodes to create for each consortium member."
       },
       "minValue": 1,
-      "maxValue": 20
+      "maxValue": 19
     },
     "mnNodeVMSize": {
       "type": "string",
@@ -160,6 +160,14 @@
     }
   },
   "variables": {
+    "apiVersionDeployments": "2016-09-01",
+    "apiVersionStorageAccounts": "2016-01-01",
+    "apiVersionAvailabilitySets": "2016-03-30",
+    "apiVersionPublicIPAddresses": "2016-09-01",
+    "apiVersionNetworkSecurityGroups": "2016-09-01",
+    "apiVersionVirtualNetworks": "2016-09-01",
+    "apiVersionNetworkInterfaces": "2016-09-01",
+    "apiVersionVirtualMachines": "2016-03-30",
     "namingInfix": "[toLower(substring(concat(parameters('namePrefix'), uniqueString(resourceGroup().id)), 0, 9))]",
     "storageAccountType": "Standard_LRS",
     "availabilitySetName": "[concat(variables('namingInfix'), 'AvSet')]",
@@ -226,42 +234,44 @@
       "sku": "14.04.4-LTS",
       "version": "latest"
     },
-    "apiVersion": "2015-06-15",
-    "apiVersionDeployments": "2016-07-01",
     "artifactsLocationURL": "https://raw.githubusercontent.com/sidkri/azure-quickstart-templates/ethereum-consortium-10-03-RC/ethereum-consortium-blockchain-network"
   },
   "resources": [
     {
-      "apiVersion": "[variables('apiVersion')]",
+      "apiVersion": "[variables('apiVersionStorageAccounts')]",
       "type": "Microsoft.Storage/storageAccounts",
       "name": "[variables('mnStorageAcctNames')[copyIndex()]]",
       "location": "[resourceGroup().location]",
       "copy": {
         "name": "mnStorageLoop",
         "count": "[variables('mnStorageAcctCount')]"
-        },
-        "properties": {
-          "accountType": "[variables('storageAccountType')]"
-        }
+      },
+      "sku": {
+        "name": "[variables('storageAccountType')]"
+      },
+      "kind": "Storage",
+      "properties": {}
     },
     {
-      "apiVersion": "[variables('apiVersion')]",
+      "apiVersion": "[variables('apiVersionStorageAccounts')]",
       "type": "Microsoft.Storage/storageAccounts",
       "name": "[variables('txStorageAcctName')]",
       "location": "[resourceGroup().location]",
-      "properties": {
-        "accountType": "[variables('storageAccountType')]"
-      }
+      "sku": {
+        "name": "[variables('storageAccountType')]"
+      },
+      "kind": "Storage",
+      "properties": {}
     },
     {
+      "apiVersion": "[variables('apiVersionAvailabilitySets')]",
       "type": "Microsoft.Compute/availabilitySets",
       "name": "[variables('availabilitySetName')]",
-      "apiVersion": "2015-06-15",
       "location": "[resourceGroup().location]",
       "properties": {}
     },
     {
-      "apiVersion": "[variables('apiVersion')]",
+      "apiVersion": "[variables('apiVersionPublicIPAddresses')]",
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "[concat(variables('txPublicIPAddressNamePrefix'), copyIndex())]",
       "location": "[resourceGroup().location]",
@@ -296,7 +306,7 @@
       }
     },
     {
-      "apiVersion": "[variables('apiVersion')]",
+      "apiVersion": "[variables('apiVersionNetworkSecurityGroups')]",
       "type": "Microsoft.Network/networkSecurityGroups",
       "name": "[variables('mnNsgName')]",
       "location": "[resourceGroup().location]",
@@ -305,7 +315,7 @@
       }
     },
     {
-      "apiVersion": "[variables('apiVersion')]",
+      "apiVersion": "[variables('apiVersionNetworkSecurityGroups')]",
       "type": "Microsoft.Network/networkSecurityGroups",
       "name": "[variables('txNsgName')]",
       "location": "[resourceGroup().location]",
@@ -360,7 +370,7 @@
       }
     },
     {
-      "apiVersion": "[variables('apiVersion')]",
+      "apiVersion": "[variables('apiVersionVirtualNetworks')]",
       "type": "Microsoft.Network/virtualNetworks",
       "name": "[variables('virtualNetworkName')]",
       "location": "[resourceGroup().location]",
@@ -433,7 +443,7 @@
       }
     },
     {
-      "apiVersion": "[variables('apiVersion')]",
+      "apiVersion": "[variables('apiVersionNetworkInterfaces')]",
       "type": "Microsoft.Network/networkInterfaces",
       "name": "[concat(variables('txNIPrefix'), copyindex())]",
       "location": "[resourceGroup().location]",
@@ -469,7 +479,7 @@
       }
     },
     {
-      "apiVersion": "[variables('apiVersion')]",
+      "apiVersion": "[variables('apiVersionNetworkInterfaces')]",
       "type": "Microsoft.Network/networkInterfaces",
       "name": "[concat(variables('mnNICPrefix'), copyindex())]",
       "location": "[resourceGroup().location]",
@@ -495,7 +505,7 @@
       }
     },
     {
-      "apiVersion": "[variables('apiVersion')]",
+      "apiVersion": "[variables('apiVersionVirtualMachines')]",
       "type": "Microsoft.Compute/virtualMachines",
       "name": "[concat(variables('txVMNamePrefix'), copyIndex())]",
       "location": "[resourceGroup().location]",
@@ -541,7 +551,7 @@
       }
     },
     {
-      "apiVersion": "[variables('apiVersion')]",
+      "apiVersion": "[variables('apiVersionVirtualMachines')]",
       "type": "Microsoft.Compute/virtualMachines",
       "name": "[concat(variables('mnVMNamePrefix'), copyIndex())]",
       "location": "[resourceGroup().location]",
@@ -625,8 +635,7 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "apiVersion":{"value": "[variables('apiVersion')]"},
-          "mnNsgName":{"value": "[variables('mnNsgName')]"}
+          "name":{"value": "[variables('mnNsgName')]"}
         }
       }
     }

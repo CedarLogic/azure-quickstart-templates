@@ -5,6 +5,7 @@ var bodyParser = require('body-parser');
 var fs = require('fs');
 var dns = require('dns');
 var Web3 = require('web3');
+var moment = require('moment');
 
 var gethIPCPath = process.argv[2];
 var coinbase = process.argv[3];
@@ -13,6 +14,7 @@ var mnNodePrefix = process.argv[5];
 var numMNNodes = process.argv[6];
 var txNodePrefix = process.argv[7];
 var numTXNodes = process.argv[8];
+var numConsortiumMembers = process.argv[9];
 
 var app = express();
 var web3 = new Web3(new Web3.providers.IpcProvider(gethIPCPath, require('net')));
@@ -29,36 +31,37 @@ app.use(session({
 }))
 
 var nodeInfoArray = [];
+var timeStamp;
 
 function getNodeInfo(hostName) {
-  // We perform a lookup to get the consortium ID by subnet IP
-  dns.lookup(hostName, function(err, address, family) {
-    var peerCount;
-    var blockNumber;
-    var consortiumId = address.split('.')[2];
+  var peerCount;
+  var blockNumber;
+  var consortiumId;
+  if(hostName.indexOf("-tx") !== -1) {
+    consortiumId = 'N/A';
+  }
+  else {
+    consortiumId = hostName.split('-mn')[1] % numConsortiumMembers;
+  }
 
-    // Transaction nodes - in subnet 10 - do not belong to any consortiumId
-    if (consortiumId === '10')
-      consortiumId = 'N/A';
+  try {
+    var web3nodeInfo = new Web3(new Web3.providers.HttpProvider("http://" + hostName + ":8545"));
+    peerCount = web3nodeInfo.net.peerCount;
+    blockNumber = web3nodeInfo.eth.blockNumber;
+  }
+  catch(err) {
+    console.log(err);
+    peerCount = "Not running";
+    blockNumber = "Not running";
+  }
 
-    try {
-      var web3nodeInfo = new Web3(new Web3.providers.HttpProvider("http://" + hostName + ":8545"));
-      peerCount = web3nodeInfo.net.peerCount;
-      blockNumber = web3nodeInfo.eth.blockNumber;
-    }
-    catch(err) {
-      console.log(err);
-      peerCount = "Not running";
-      blockNumber = "Not running";
-    }
-
-    var nodeInfo = {hostname: hostName, peercount: peerCount, blocknumber: blockNumber, consortiumid: consortiumId};
-    nodeInfoArray.push(nodeInfo);
-  });
+  var nodeInfo = {hostname: hostName, peercount: peerCount, blocknumber: blockNumber, consortiumid: consortiumId};
+  nodeInfoArray.push(nodeInfo);
 }
 
 
 function getNodesInfo() {
+  console.time("getNodesInfo");
   nodeInfoArray = [];
 
   for(var i = 0; i < numTXNodes; i++) {
@@ -70,11 +73,25 @@ function getNodesInfo() {
   }
 
   // Sort the final result by consortium ID
-  nodeInfoArray;
+  nodeInfoArray = nodeInfoArray.sort(function(a,b) {
+    var aIsTx = a.consortiumid === 'N/A';
+    var bIsTx = b.consortiumid === 'N/A';
+
+    if (aIsTx && bIsTx)
+      return 0;
+    if (aIsTx)
+      return -1;
+    if (bIsTx)
+      return 1;
+    return a.consortiumid - b.consortiumid
+  });
+
+  timeStamp = moment().format('h:mm:ss a,  MMM Do YYYY');
+  console.timeEnd("getNodesInfo");
 }
 
 // We scale the polling interval with the number of nodes we have to check
-var web3PollingInterval = (numMNNodes + numTXNodes) * 5000;
+var web3PollingInterval = (numMNNodes + numTXNodes) * 2000;
 setInterval(getNodesInfo, web3PollingInterval);
 
 // Check if we've mined a block yet
@@ -90,19 +107,7 @@ app.get('/', function (req, res) {
   // Check if the IPC endpoint is up and running
   if(fs.existsSync(gethIPCPath)) {
     var hasNodeRows = nodeInfoArray.length > 0;
-    var sortedNodeArray = nodeInfoArray.sort(function(a,b) {
-      var aIsTx = a.consortiumid === 'N/A';
-      var bIsTx = b.consortiumid === 'N/A';
-
-      if (aIsTx && bIsTx)
-        return 0;
-      if (aIsTx)
-        return -1;
-      if (bIsTx)
-        return 1;
-      return a.consortiumid - b.consortiumid
-    });
-    var data = { isSent: req.session.isSent, error: req.session.error, hasNodeRows: hasNodeRows, nodeRows: sortedNodeArray, minedABlock: minedABlock() };
+    var data = { isSent: req.session.isSent, error: req.session.error, hasNodeRows: hasNodeRows, nodeRows: nodeInfoArray, minedABlock: minedABlock(), timestamp: timeStamp, refreshInterval: (web3PollingInterval/1000) };
     req.session.isSent = false;
     req.session.error = false;
 

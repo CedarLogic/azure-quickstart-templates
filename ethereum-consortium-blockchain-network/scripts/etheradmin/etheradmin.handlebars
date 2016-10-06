@@ -32,6 +32,8 @@
         {{/each}}
       </tbody>
     </table>
+    <i>As of {{this.timestamp}} (Refresh interval is {{this.refreshInterval}} seconds)</i>
+    <hr />
   {{else}}
     <h4>Waiting on all Ethereum nodes to boot up...</h4>
   {{/if}}

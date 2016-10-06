@@ -37,14 +37,14 @@
     }
   },
   "variables": {
-    "apiVersion": "2015-06-15",
+    "apiVersionVirtualMachinesExtensions": "2016-03-30",
     "txNode": 0,
     "mnNode": 1,
     "maxPeers": 25
   },
   "resources": [
     {
-      "apiVersion": "[variables('apiVersion')]",
+      "apiVersion": "[variables('apiVersionVirtualMachinesExtensions')]",
       "type": "Microsoft.Compute/virtualMachines/extensions",
       "name": "[concat(parameters('txVMNamePrefix'), copyIndex(), '/newuserscript')]",
       "copy": {
@@ -68,7 +68,7 @@
       }
     },
     {
-      "apiVersion": "[variables('apiVersion')]",
+      "apiVersion": "[variables('apiVersionVirtualMachinesExtensions')]",
       "type": "Microsoft.Compute/virtualMachines/extensions",
       "name": "[concat(parameters('mnVMNamePrefix'), copyIndex(), '/newuserscript')]",
       "copy": {

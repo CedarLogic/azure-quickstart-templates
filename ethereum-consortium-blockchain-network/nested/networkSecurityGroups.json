@@ -2,18 +2,18 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "apiVersion" : {
-      "type": "string"
-    },
-    "mnNsgName" : {
+    "name" : {
       "type": "string"
     }
   },
+  "variables": {
+    "apiVersionNetworkSecurityGroups": "2016-09-01"
+  },
   "resources": [
      {
-      "apiVersion": "[parameters('apiVersion')]",
+      "apiVersion": "[variables('apiVersionNetworkSecurityGroups')]",
       "type": "Microsoft.Network/networkSecurityGroups",
-      "name": "[parameters('mnNsgName')]",
+      "name": "[parameters('name')]",
       "location": "[resourceGroup().location]",
       "properties": {
         "securityRules": [

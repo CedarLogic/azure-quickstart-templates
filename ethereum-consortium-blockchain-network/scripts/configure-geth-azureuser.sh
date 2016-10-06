@@ -55,6 +55,7 @@ sudo apt-get -y update;
 ##############
 sudo apt-get -y install npm;
 sudo update-alternatives --install /usr/bin/node nodejs /usr/bin/nodejs 100;
+npm install moment;
 
 ############
 # Setup Geth
@@ -69,15 +70,15 @@ sudo apt-get install -y ethereum;
 declare -a NODE_KEYS
 declare -a NODE_IDS
 for i in `seq 0 $(($NUM_BOOT_NODES - 1))`; do
-	BOOT_NODE_HOSTNAME=$MN_NODE_PREFIX$i
-	NODE_KEYS[$i]=`echo $BOOT_NODE_HOSTNAME | sha256sum | cut -d ' ' -f 1`
+	BOOT_NODE_HOSTNAME=$MN_NODE_PREFIX$i;
+	NODE_KEYS[$i]=`echo $BOOT_NODE_HOSTNAME | sha256sum | cut -d ' ' -f 1`;
 	bootnode -nodekeyhex ${NODE_KEYS[$i]} > $HOMEDIR/tempbootnodeoutput 2>&1 &
 	while sleep 1; do
-		if [ -s tempbootnodeoutput ]; then
-			NODE_IDS[$i]=`grep -Po '(?<=\/\/).*(?=@)' $HOMEDIR/tempbootnodeoutput`
-			killall bootnode
-			rm $HOMEDIR/tempbootnodeoutput
-			break
+		if [ -s $HOMEDIR/tempbootnodeoutput ]; then
+			NODE_IDS[$i]=`grep -Po '(?<=\/\/).*(?=@)' $HOMEDIR/tempbootnodeoutput`;
+			killall bootnode;
+			rm $HOMEDIR/tempbootnodeoutput;
+			break;
 		fi
 	done
 done
@@ -157,6 +158,7 @@ printf "%s\n" "BOOTNODE_URLS=$BOOTNODE_URLS" >> $GETH_CFG_FILE_PATH;
 if [ $NODE_TYPE -eq 0 ]; then #TX node
   printf "%s\n" "ETHERADMIN_HOME=$ETHERADMIN_HOME" >> $GETH_CFG_FILE_PATH;
   printf "%s\n" "PREFUND_ADDRESS=$PREFUND_ADDRESS" >> $GETH_CFG_FILE_PATH;
+  printf "%s\n" "NUM_BOOT_NODES=$NUM_BOOT_NODES" >> $GETH_CFG_FILE_PATH;
   printf "%s\n" "MN_NODE_PREFIX=$MN_NODE_PREFIX" >> $GETH_CFG_FILE_PATH;
   printf "%s\n" "NUM_MN_NODES=$NUM_MN_NODES" >> $GETH_CFG_FILE_PATH;
   printf "%s\n" "TX_NODE_PREFIX=$TX_NODE_PREFIX" >> $GETH_CFG_FILE_PATH;
