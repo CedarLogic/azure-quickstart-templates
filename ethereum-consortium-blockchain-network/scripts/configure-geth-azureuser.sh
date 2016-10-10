@@ -55,7 +55,6 @@ sudo apt-get -y update;
 ##############
 sudo apt-get -y install npm;
 sudo update-alternatives --install /usr/bin/node nodejs /usr/bin/nodejs 100;
-npm install moment;
 
 ############
 # Setup Geth

@@ -5,7 +5,7 @@
         <td><h1>Ethereum Node Status</h1></td>
         <td>
           <form action="" method="GET">
-            <input class="button-primary" type="submit" value="Refresh">
+            <input class="button-primary" type="submit" value="Reload">
           </form>
         </td>
       </tr>
@@ -32,7 +32,7 @@
         {{/each}}
       </tbody>
     </table>
-    <i>As of {{this.timestamp}} (Refresh interval is {{this.refreshInterval}} seconds)</i>
+    <i>As of {{this.timestamp}}   (Refresh interval: ~{{this.refreshinterval}} seconds)</i>
     <hr />
   {{else}}
     <h4>Waiting on all Ethereum nodes to boot up...</h4>
