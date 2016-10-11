@@ -2,12 +2,23 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "namePrefix" : {
+    "namePrefix": {
       "type": "string",
       "metadata": {
         "description": "String used as a base for naming resources (6 characters or less).  A unique hash is prepended to the string for some resources, while resource-specific information is appended.  (alphanumeric characters only)"
       },
       "maxLength": 6
+    },
+    "authType": {
+      "type": "string",
+      "defaultValue": "SSHKey",
+      "allowedValues": [
+        "Password",
+        "SSHKey"
+      ],
+      "metadata": {
+        "description": "Authorization type for SSH access to VMs"
+      }
     },
     "adminUsername": {
       "type": "string",
@@ -22,6 +33,13 @@
         "description": "Administrator password for each deployed VM"
       },
       "minLength": 12
+    },
+    "sshKey": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "SSH RSA public key file as a string"
+      }
     },
     "ethereumAccountPsswd": {
       "type": "securestring",
@@ -165,9 +183,9 @@
     "apiVersionAvailabilitySets": "2016-03-30",
     "apiVersionPublicIPAddresses": "2016-09-01",
     "apiVersionNetworkSecurityGroups": "2016-09-01",
-    "apiVersionVirtualNetworks": "2016-09-01",
     "apiVersionNetworkInterfaces": "2016-09-01",
     "apiVersionVirtualMachines": "2016-03-30",
+    "apiVersionVirtualNetworks": "2016-09-01",
     "namingInfix": "[toLower(substring(concat(parameters('namePrefix'), uniqueString(resourceGroup().id)), 0, 9))]",
     "storageAccountType": "Standard_LRS",
     "availabilitySetName": "[concat(variables('namingInfix'), 'AvSet')]",
@@ -240,21 +258,6 @@
     {
       "apiVersion": "[variables('apiVersionStorageAccounts')]",
       "type": "Microsoft.Storage/storageAccounts",
-      "name": "[variables('mnStorageAcctNames')[copyIndex()]]",
-      "location": "[resourceGroup().location]",
-      "copy": {
-        "name": "mnStorageLoop",
-        "count": "[variables('mnStorageAcctCount')]"
-      },
-      "sku": {
-        "name": "[variables('storageAccountType')]"
-      },
-      "kind": "Storage",
-      "properties": {}
-    },
-    {
-      "apiVersion": "[variables('apiVersionStorageAccounts')]",
-      "type": "Microsoft.Storage/storageAccounts",
       "name": "[variables('txStorageAcctName')]",
       "location": "[resourceGroup().location]",
       "sku": {
@@ -269,22 +272,6 @@
       "name": "[variables('availabilitySetName')]",
       "location": "[resourceGroup().location]",
       "properties": {}
-    },
-    {
-      "apiVersion": "[variables('apiVersionPublicIPAddresses')]",
-      "type": "Microsoft.Network/publicIPAddresses",
-      "name": "[concat(variables('txPublicIPAddressNamePrefix'), copyIndex())]",
-      "location": "[resourceGroup().location]",
-      "copy": {
-        "name": "txpublicIPAddressLoop",
-        "count": "[parameters('numTXNodes')]"
-      },
-      "properties": {
-        "publicIPAllocationMethod": "Dynamic",
-        "dnsSettings": {
-          "domainNameLabel": "[concat(variables('txVMNamePrefix'), copyIndex())]"
-        }
-      }
     },
     {
       "apiVersion": "[variables('apiVersionDeployments')]",
@@ -443,152 +430,74 @@
       }
     },
     {
-      "apiVersion": "[variables('apiVersionNetworkInterfaces')]",
-      "type": "Microsoft.Network/networkInterfaces",
-      "name": "[concat(variables('txNIPrefix'), copyindex())]",
-      "location": "[resourceGroup().location]",
-      "copy": {
-        "name": "txNicLoop",
-        "count": "[parameters('numTXNodes')]"
-      },
+      "apiVersion": "[variables('apiVersionDeployments')]",
+      "name": "txVMLinkedTemplate",
+      "type": "Microsoft.Resources/deployments",
       "dependsOn": [
         "[concat('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]",
-        "[concat('Microsoft.Network/publicIPAddresses/', concat(variables('txPublicIPAddressNamePrefix'), copyIndex()))]",
+        "[concat('Microsoft.Storage/storageAccounts/', variables('txStorageAcctName'))]",
+        "[concat('Microsoft.Compute/availabilitySets/', variables('availabilitySetName'))]",
         "loadBalancerLinkedTemplate"
       ],
       "properties": {
-        "ipConfigurations": [
-          {
-            "name": "ipconfig1",
-            "properties": {
-              "privateIPAllocationMethod": "Dynamic",
-              "publicIPAddress": {
-                "id": "[resourceId('Microsoft.Network/publicIPAddresses/', concat(variables('txPublicIPAddressNamePrefix'), copyIndex()))]"
-              },
-              "subnet": {
-                "id": "[variables('txSubnetRef')]"
-              },
-              "loadBalancerBackendAddressPools": [
-                {
-                  "id": "[reference('loadBalancerLinkedTemplate').outputs.backendAddressPoolID.value]"
-                }
-              ]
-            }
-          }
-        ]
-      }
-    },
-    {
-      "apiVersion": "[variables('apiVersionNetworkInterfaces')]",
-      "type": "Microsoft.Network/networkInterfaces",
-      "name": "[concat(variables('mnNICPrefix'), copyindex())]",
-      "location": "[resourceGroup().location]",
-      "copy": {
-        "name": "mnNicLoop",
-        "count": "[variables('numMNNodes')]"
-      },
-      "dependsOn": [
-        "[concat('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]"
-      ],
-      "properties": {
-        "ipConfigurations": [
-          {
-            "name": "ipconfig1",
-            "properties": {
-              "privateIPAllocationMethod": "Dynamic",
-              "subnet": {
-                "id": "[variables('mnSubnetRefArray')[mod(copyIndex(), parameters('numConsortiumMembers'))]]"
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
-      "apiVersion": "[variables('apiVersionVirtualMachines')]",
-      "type": "Microsoft.Compute/virtualMachines",
-      "name": "[concat(variables('txVMNamePrefix'), copyIndex())]",
-      "location": "[resourceGroup().location]",
-      "copy": {
-        "name": "txVMLoop",
-        "count": "[parameters('numTXNodes')]"
-      },
-      "dependsOn": [
-        "[concat('Microsoft.Storage/storageAccounts/', variables('txStorageAcctName'))]",
-        "[concat('Microsoft.Network/networkInterfaces/', variables('txNIPrefix'), copyIndex())]",
-        "[concat('Microsoft.Compute/availabilitySets/', variables('availabilitySetName'))]"
-      ],
-      "properties": {
-        "availabilitySet": {
-          "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('availabilitySetName'))]"
+        "mode": "incremental",
+        "templateLink": {
+          "uri": "[concat(variables('artifactsLocationURL'), '/nested/txVMAuth', parameters('authType'), '.json')]",
+          "contentVersion": "1.0.0.0"
         },
-        "hardwareProfile": {
-          "vmSize": "[parameters('txNodeVMSize')]"
-        },
-        "osProfile": {
-          "computerName": "[concat(variables('txVMNamePrefix'), copyIndex())]",
-          "adminUsername": "[parameters('adminUsername')]",
-          "adminPassword": "[parameters('adminPassword')]"
-        },
-        "storageProfile": {
-          "imageReference": "[variables('ubuntuImage')]",
-          "osDisk": {
-            "name": "[concat(variables('namingInfix'), '-osdisk')]",
-            "vhd": {
-              "uri" :"[concat(reference(concat('Microsoft.Storage/storageAccounts/', variables('txStorageAcctName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).primaryEndpoints.blob, 'vhds/osdisk', copyIndex(), '.vhd')]"
-            },
-            "caching": "ReadWrite",
-            "createOption": "FromImage"
-          }
-        },
-        "networkProfile": {
-          "networkInterfaces": [
-            {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('txNIPrefix'), copyindex()))]"
-            }
-          ]
+        "parameters": {
+          "apiVersionVirtualMachines":{"value": "[variables('apiVersionVirtualMachines')]"},
+          "apiVersionNetworkInterfaces":{"value": "[variables('apiVersionNetworkInterfaces')]"},
+          "apiVersionPublicIPAddresses":{"value": "[variables('apiVersionPublicIPAddresses')]"},
+          "loadBalancerBackendAddressPoolId":{"value": "[reference('loadBalancerLinkedTemplate').outputs.backendAddressPoolID.value]"},
+          "txSubnetRef":{"value": "[variables('txSubnetRef')]"},
+          "txPublicIPAddressNamePrefix":{"value": "[variables('txPublicIPAddressNamePrefix')]"},
+          "txVMNamePrefix":{"value": "[variables('txVMNamePrefix')]"},
+          "numTXNodes":{"value": "[parameters('numTXNodes')]"},
+          "txStorageAcctName":{"value": "[variables('txStorageAcctName')]"},
+          "txNIPrefix":{"value": "[variables('txNIPrefix')]"},
+          "storageAccountType":{"value": "[variables('storageAccountType')]"},
+          "availabilitySetName":{"value": "[variables('availabilitySetName')]"},
+          "txNodeVMSize":{"value": "[parameters('txNodeVMSize')]"},
+          "adminUsername":{"value": "[parameters('adminUsername')]"},
+          "adminPassword":{"value": "[parameters('adminPassword')]"},
+          "sshKey":{"value": "[parameters('sshKey')]"},
+          "ubuntuImage":{"value": "[variables('ubuntuImage')]"},
+          "namingInfix":{"value": "[variables('namingInfix')]"}
         }
       }
     },
     {
-      "apiVersion": "[variables('apiVersionVirtualMachines')]",
-      "type": "Microsoft.Compute/virtualMachines",
-      "name": "[concat(variables('mnVMNamePrefix'), copyIndex())]",
-      "location": "[resourceGroup().location]",
-      "copy": {
-        "name": "mnVMLoop",
-        "count": "[variables('numMNNodes')]"
-      },
+      "apiVersion": "[variables('apiVersionDeployments')]",
+      "name": "mnVMLinkedTemplate",
+      "type": "Microsoft.Resources/deployments",
       "dependsOn": [
-        "[concat('Microsoft.Storage/storageAccounts/', variables('mnStorageAcctNames')[mod(copyIndex(), variables('mnStorageAcctCount'))])]",
-        "[concat('Microsoft.Network/networkInterfaces/', variables('mnNICPrefix'), copyindex())]"
+        "[concat('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]"
       ],
       "properties": {
-        "hardwareProfile": {
-          "vmSize": "[parameters('mnNodeVMSize')]"
+        "mode": "incremental",
+        "templateLink": {
+          "uri": "[concat(variables('artifactsLocationURL'), '/nested/mnVMAuth', parameters('authType'), '.json')]",
+          "contentVersion": "1.0.0.0"
         },
-        "osProfile": {
-          "computerName": "[concat(variables('mnVMNamePrefix'), copyIndex())]",
-          "adminUsername": "[parameters('adminUsername')]",
-          "adminPassword": "[parameters('adminPassword')]"
-        },
-        "storageProfile": {
-          "imageReference": "[variables('ubuntuImage')]",
-          "osDisk": {
-            "name": "[concat(variables('namingInfix'), '-osdisk')]",
-            "vhd": {
-              "uri" :"[concat(reference(concat('Microsoft.Storage/storageAccounts/', variables('mnStorageAcctNames')[mod(copyIndex(), variables('mnStorageAcctCount'))]), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).primaryEndpoints.blob, 'vhds/osdisk', copyIndex(), '.vhd')]"
-            },
-            "caching": "ReadWrite",
-            "createOption": "FromImage"
-          }
-        },
-        "networkProfile": {
-          "networkInterfaces": [
-            {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('mnNICPrefix'), copyindex()))]"
-            }
-          ]
+        "parameters": {
+          "apiVersionVirtualMachines":{"value": "[variables('apiVersionVirtualMachines')]"},
+          "apiVersionNetworkInterfaces":{"value": "[variables('apiVersionNetworkInterfaces')]"},
+          "apiVersionStorageAccounts":{"value": "[variables('apiVersionStorageAccounts')]"},
+          "mnVMNamePrefix":{"value": "[variables('mnVMNamePrefix')]"},
+          "numMNNodes":{"value": "[variables('numMNNodes')]"},
+          "mnNICPrefix":{"value": "[variables('mnNICPrefix')]"},
+          "mnStorageAcctNames":{"value": "[variables('mnStorageAcctNames')]"},
+          "mnStorageAcctCount":{"value": "[variables('mnStorageAcctCount')]"},
+          "mnSubnetRefArray":{"value": "[variables('mnSubnetRefArray')]"},
+          "numConsortiumMembers":{"value": "[parameters('numConsortiumMembers')]"},
+          "storageAccountType":{"value": "[variables('storageAccountType')]"},
+          "mnNodeVMSize":{"value": "[parameters('mnNodeVMSize')]"},
+          "adminUsername":{"value": "[parameters('adminUsername')]"},
+          "adminPassword":{"value": "[parameters('adminPassword')]"},
+          "sshKey":{"value": "[parameters('sshKey')]"},
+          "ubuntuImage":{"value": "[variables('ubuntuImage')]"},
+          "namingInfix":{"value": "[variables('namingInfix')]"}
         }
       }
     },
@@ -597,8 +506,8 @@
       "name": "vmExtensionLinkedTemplate",
       "type": "Microsoft.Resources/deployments",
       "dependsOn": [
-        "txVMLoop",
-        "mnVMLoop"
+        "txVMLinkedTemplate",
+        "mnVMLinkedTemplate"
       ],
       "properties": {
         "mode": "incremental",
