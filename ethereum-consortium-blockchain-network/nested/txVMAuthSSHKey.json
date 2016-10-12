@@ -8,16 +8,13 @@
     "apiVersionNetworkInterfaces": {
       "type": "string"
     },
-    "apiVersionPublicIPAddresses": {
-      "type": "string"
-    },
     "loadBalancerBackendAddressPoolId": {
       "type": "string"
     },
-    "txSubnetRef": {
+    "loadBalancerInboundNatRuleIDprefix": {
       "type": "string"
     },
-    "txPublicIPAddressNamePrefix": {
+    "txSubnetRef": {
       "type": "string"
     },
     "txVMNamePrefix": {
@@ -45,7 +42,7 @@
       "type": "string"
     },
     "adminPassword": {
-      "type": "string"
+      "type": "securestring"
     },
     "sshKey": {
       "type": "string"
@@ -55,28 +52,12 @@
     },
     "namingInfix": {
       "type": "string"
-    },
+    }
   },
   "variables": {
     "sshKeyPath": "[concat('/home/',parameters('adminUsername'),'/.ssh/authorized_keys')]"
   },
   "resources": [
-    {
-      "apiVersion": "[parameters('apiVersionPublicIPAddresses')]",
-      "type": "Microsoft.Network/publicIPAddresses",
-      "name": "[concat(parameters('txPublicIPAddressNamePrefix'), copyIndex())]",
-      "location": "[resourceGroup().location]",
-      "copy": {
-        "name": "txpublicIPAddressLoop",
-        "count": "[parameters('numTXNodes')]"
-      },
-      "properties": {
-        "publicIPAllocationMethod": "Dynamic",
-        "dnsSettings": {
-          "domainNameLabel": "[concat(parameters('txVMNamePrefix'), copyIndex())]"
-        }
-      }
-    },
     {
       "apiVersion": "[parameters('apiVersionNetworkInterfaces')]",
       "type": "Microsoft.Network/networkInterfaces",
@@ -86,24 +67,23 @@
         "name": "txNicLoop",
         "count": "[parameters('numTXNodes')]"
       },
-      "dependsOn": [
-        "[concat('Microsoft.Network/publicIPAddresses/', concat(parameters('txPublicIPAddressNamePrefix'), copyIndex()))]"
-      ],
       "properties": {
         "ipConfigurations": [
           {
             "name": "ipconfig1",
             "properties": {
               "privateIPAllocationMethod": "Dynamic",
-              "publicIPAddress": {
-                "id": "[resourceId('Microsoft.Network/publicIPAddresses/', concat(parameters('txPublicIPAddressNamePrefix'), copyIndex()))]"
-              },
               "subnet": {
                 "id": "[parameters('txSubnetRef')]"
               },
               "loadBalancerBackendAddressPools": [
                 {
                   "id": "[parameters('loadBalancerBackendAddressPoolId')]"
+                }
+              ],
+              "loadBalancerInboundNatRules": [
+                {
+                  "id": "[concat(parameters('loadBalancerInboundNatRuleIDprefix'), copyindex())]"
                 }
               ]
             }

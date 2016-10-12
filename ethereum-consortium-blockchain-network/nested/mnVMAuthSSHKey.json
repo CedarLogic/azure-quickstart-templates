@@ -42,7 +42,7 @@
       "type": "string"
     },
     "adminPassword": {
-      "type": "string"
+      "type": "securestring"
     },
     "sshKey": {
       "type": "string"
@@ -52,7 +52,7 @@
     },
     "namingInfix": {
       "type": "string"
-    },
+    }
   },
   "variables": {
     "sshKeyPath": "[concat('/home/',parameters('adminUsername'),'/.ssh/authorized_keys')]"

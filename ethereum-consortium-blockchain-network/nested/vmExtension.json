@@ -37,6 +37,9 @@
     },
     "gethIPCPort": {
       "type": "int"
+    },
+    "adminSitePort": {
+      "type": "int"
     }
   },
   "variables": {
@@ -66,7 +69,7 @@
           ]
         },
         "protectedSettings": {
-          "commandToExecute": "[concat('/bin/bash configure-geth.sh \"', parameters('adminUsername'), '\" \"', parameters('ethereumAccountPsswd'), '\" \"', parameters('ethereumAccountPassphrase'), '\" \"', parameters('artifactsLocationURL'), '\" \"', parameters('ethereumNetworkID'), '\" \"', variables('maxPeers'), '\" \"', variables('txNode'), '\" \"', parameters('gethIPCPort'), '\" \"', parameters('numBootNodes'), '\" \"', parameters('numMNNodes'), '\" \"', parameters('mnVMNamePrefix'), '\" \"', parameters('numTXNodes'), '\" \"', parameters('txVMNamePrefix'), '\"')]"
+          "commandToExecute": "[concat('/bin/bash configure-geth.sh \"', parameters('adminUsername'), '\" \"', parameters('ethereumAccountPsswd'), '\" \"', parameters('ethereumAccountPassphrase'), '\" \"', parameters('artifactsLocationURL'), '\" \"', parameters('ethereumNetworkID'), '\" \"', variables('maxPeers'), '\" \"', variables('txNode'), '\" \"', parameters('gethIPCPort'), '\" \"', parameters('numBootNodes'), '\" \"', parameters('numMNNodes'), '\" \"', parameters('mnVMNamePrefix'), '\" \"', parameters('numTXNodes'), '\" \"', parameters('txVMNamePrefix'), '\" \"', parameters('adminSitePort'), '\"')]"
         }
       }
     },

@@ -20,9 +20,10 @@ GETH_IPC_PORT=$8;
 NUM_BOOT_NODES=$9;
 NUM_MN_NODES=${10};
 MN_NODE_PREFIX=${11};
-MN_NODE_SEQNUM=${12}; 	#Only supplied for NODE_TYPE=1
-NUM_TX_NODES=${12};		#Only supplied for NODE_TYPE=0
-TX_NODE_PREFIX=${13};		#Only supplied for NODE_TYPE=0
+MN_NODE_SEQNUM=${12};   #Only supplied for NODE_TYPE=1
+NUM_TX_NODES=${12};     #Only supplied for NODE_TYPE=0
+TX_NODE_PREFIX=${13};   #Only supplied for NODE_TYPE=0
+ADMIN_SITE_PORT=${14};  #Only supplied for NODE_TYPE=0
 
 MINER_THREADS=1;
 # Difficulty constant represents ~15 sec. block generation for one node
@@ -165,6 +166,7 @@ if [ $NODE_TYPE -eq 0 ]; then #TX node
   printf "%s\n" "NUM_MN_NODES=$NUM_MN_NODES" >> $GETH_CFG_FILE_PATH;
   printf "%s\n" "TX_NODE_PREFIX=$TX_NODE_PREFIX" >> $GETH_CFG_FILE_PATH;
   printf "%s\n" "NUM_TX_NODES=$NUM_TX_NODES" >> $GETH_CFG_FILE_PATH;
+  printf "%s\n" "ADMIN_SITE_PORT=$ADMIN_SITE_PORT" >> $GETH_CFG_FILE_PATH;
 fi
 
 ##########################################
