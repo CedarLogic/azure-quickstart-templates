@@ -88,12 +88,15 @@
            "perfCfg":[
               {
                 "query":"SELECT UsedMemory,AvailableMemory FROM SCX_MemoryStatisticalInformation","table":"Memory"
+              },
+              {
+                "query":"SELECT PercentIdleTime,PercentProcessorTime,PercentIOWaitTime FROM SCX_ProcessorStatisticalInformation WHERE IsAggregate = TRUE","table":"CPU"
               }
             ]
         },
         "protectedSettings": {
           "storageAccountName": "[parameters('txStorageAcctName')]",
-          "storageAccountKey": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('txStorageAcctName'),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('txStorageAcctName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value)]"
+          "storageAccountKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('txStorageAcctName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value]"
         }
       }
     },
@@ -136,15 +139,18 @@
         "typeHandlerVersion": "2.3",
         "autoUpgradeMinorVersion": true,
         "settings": {
-           "perfCfg":[
-              {
-                "query":"SELECT UsedMemory,AvailableMemory FROM SCX_MemoryStatisticalInformation","table":"Memory"
-              }
-            ]
+          "perfCfg":[
+             {
+               "query":"SELECT UsedMemory,AvailableMemory FROM SCX_MemoryStatisticalInformation","table":"Memory"
+             },
+             {
+               "query":"SELECT PercentIdleTime,PercentProcessorTime,PercentIOWaitTime FROM SCX_ProcessorStatisticalInformation WHERE IsAggregate = TRUE","table":"CPU"
+             }
+           ]
         },
         "protectedSettings": {
           "storageAccountName": "[parameters('txStorageAcctName')]",
-          "storageAccountKey": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('txStorageAcctName'),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('txStorageAcctName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value)]"
+          "storageAccountKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('txStorageAcctName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value]"
         }
       }
     },
