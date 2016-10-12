@@ -29,10 +29,10 @@
     },
     "adminPassword": {
       "type": "securestring",
+      "defaultValue": "",
       "metadata": {
         "description": "Administrator password for each deployed VM"
-      },
-      "minLength": 12
+      }
     },
     "sshKey": {
       "type": "string",
@@ -80,6 +80,17 @@
       },
       "minValue": 1,
       "maxValue": 19
+    },
+    "storageAccountType": {
+      "type": "string",
+      "defaultValue": "Standard_LRS",
+      "allowedValues": [
+        "Standard_LRS",
+        "Premium_LRS"
+      ],
+      "metadata": {
+        "description": "Type of storage accounts to create"
+      }
     },
     "mnNodeVMSize": {
       "type": "string",
@@ -187,7 +198,6 @@
     "apiVersionVirtualMachines": "2016-03-30",
     "apiVersionVirtualNetworks": "2016-09-01",
     "namingInfix": "[toLower(substring(concat(parameters('namePrefix'), uniqueString(resourceGroup().id)), 0, 9))]",
-    "storageAccountType": "Standard_LRS",
     "availabilitySetName": "[concat(variables('namingInfix'), 'AvSet')]",
     "httpPort": 80,
     "adminSitePort": 3000,
@@ -249,7 +259,7 @@
     "ubuntuImage": {
       "publisher": "Canonical",
       "offer": "UbuntuServer",
-      "sku": "14.04.4-LTS",
+      "sku": "14.04.5-LTS",
       "version": "latest"
     },
     "artifactsLocationURL": "https://raw.githubusercontent.com/sidkri/azure-quickstart-templates/ethereum-consortium-10-03-RC/ethereum-consortium-blockchain-network"
@@ -261,7 +271,7 @@
       "name": "[variables('txStorageAcctName')]",
       "location": "[resourceGroup().location]",
       "sku": {
-        "name": "[variables('storageAccountType')]"
+        "name": "[parameters('storageAccountType')]"
       },
       "kind": "Storage",
       "properties": {}
@@ -456,7 +466,7 @@
           "numTXNodes":{"value": "[parameters('numTXNodes')]"},
           "txStorageAcctName":{"value": "[variables('txStorageAcctName')]"},
           "txNIPrefix":{"value": "[variables('txNIPrefix')]"},
-          "storageAccountType":{"value": "[variables('storageAccountType')]"},
+          "storageAccountType":{"value": "[parameters('storageAccountType')]"},
           "availabilitySetName":{"value": "[variables('availabilitySetName')]"},
           "txNodeVMSize":{"value": "[parameters('txNodeVMSize')]"},
           "adminUsername":{"value": "[parameters('adminUsername')]"},
@@ -491,7 +501,7 @@
           "mnStorageAcctCount":{"value": "[variables('mnStorageAcctCount')]"},
           "mnSubnetRefArray":{"value": "[variables('mnSubnetRefArray')]"},
           "numConsortiumMembers":{"value": "[parameters('numConsortiumMembers')]"},
-          "storageAccountType":{"value": "[variables('storageAccountType')]"},
+          "storageAccountType":{"value": "[parameters('storageAccountType')]"},
           "mnNodeVMSize":{"value": "[parameters('mnNodeVMSize')]"},
           "adminUsername":{"value": "[parameters('adminUsername')]"},
           "adminPassword":{"value": "[parameters('adminPassword')]"},
@@ -518,6 +528,7 @@
         "parameters": {
           "numBootNodes":{"value": "[parameters('numConsortiumMembers')]"},
           "txVMNamePrefix":{"value": "[variables('txVMNamePrefix')]"},
+          "txStorageAcctName":{"value": "[variables('txStorageAcctName')]"},
           "numTXNodes":{"value": "[parameters('numTXNodes')]"},
           "mnVMNamePrefix":{"value": "[variables('mnVMNamePrefix')]"},
           "numMNNodes":{"value": "[variables('numMNNodes')]"},
