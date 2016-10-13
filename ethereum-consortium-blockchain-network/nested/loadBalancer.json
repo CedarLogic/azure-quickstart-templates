@@ -16,11 +16,21 @@
     },
     "backendPort2": {
       "type": "int"
+    },
+    "numInboundNATRules": {
+      "type": "int"
+    },
+    "inboundNATRuleFrontendStartingPort": {
+      "type": "int"
+    },
+    "inboundNATRuleBackendPort": {
+      "type": "int"
     }
   },
   "variables": {
     "apiVersionPublicIPAddresses": "2016-09-01",
     "apiVersionLoadBalancers": "2016-09-01",
+    "apiVersionLoadBalanceInboundNATRules": "2016-09-01",
     "lbName": "[concat(parameters('dnsHostName'), '-LB')]",
     "lbID": "[resourceId('Microsoft.Network/loadBalancers',variables('lbName'))]",
     "lbPublicIPAddressName": "[concat(parameters('dnsHostName'), '-publicip')]",
@@ -28,6 +38,8 @@
     "lbFrontEndIPConfigID": "[concat(variables('lbID'),'/frontendIPConfigurations/',variables('lbFrontEndIpConfigName'))]",
     "lbBackendAddressPoolName": "LoadBalancerBackend1",
     "lbBackendAddressPoolID": "[concat(variables('lbID'), '/backendAddressPools/', variables('lbBackendAddressPoolName'))]",
+    "loadBalancerInboundNatRuleNamePart": "SSH-VM",
+    "loadBalancerInboundNatRuleIDprefix": "[concat(variables('lbID'),'/inboundNatRules/',variables('loadBalancerInboundNatRuleNamePart'))]"
   },
   "resources": [
     {
@@ -127,16 +139,42 @@
           }
         ]
       }
+    },
+    {
+      "apiVersion": "[variables('apiVersionLoadBalanceInboundNATRules')]",
+      "type": "Microsoft.Network/loadBalancers/inboundNatRules",
+      "name": "[concat(variables('lbName'), '/', variables('loadBalancerInboundNatRuleNamePart'), copyIndex())]",
+      "location": "[resourceGroup().location]",
+      "copy": {
+        "name": "lbNatLoop",
+        "count": "[parameters('numInboundNATRules')]"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Network/loadBalancers/', variables('lbName'))]"
+      ],
+      "properties": {
+        "frontendIPConfiguration": {
+          "id": "[variables('lbFrontEndIPConfigID')]"
+        },
+        "protocol": "tcp",
+        "frontendPort": "[copyIndex(parameters('inboundNATRuleFrontendStartingPort'))]",
+        "backendPort": "[parameters('inboundNATRuleBackendPort')]",
+        "enableFloatingIP": false
+      }
     }
   ],
   "outputs": {
     "fqdn": {
       "type": "string",
-      "value": "[concat('http://', reference(variables('lbPublicIPAddressName')).dnsSettings.fqdn)]"
+      "value": "[reference(variables('lbPublicIPAddressName')).dnsSettings.fqdn]"
     },
     "backendAddressPoolID": {
       "type": "string",
       "value": "[variables('lbBackendAddressPoolID')]"
+    },
+    "inboundNatRuleIDprefix": {
+      "type": "string",
+      "value": "[variables('loadBalancerInboundNatRuleIDprefix')]"
     }
   }
 }

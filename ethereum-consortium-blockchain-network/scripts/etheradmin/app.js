@@ -11,14 +11,15 @@ var Promise = require('promise');
 /*
  * Parameters
  */
-var gethIPCPath = process.argv[2];
-var coinbase = process.argv[3];
-var coinbasePw = process.argv[4];
-var mnNodePrefix = process.argv[5];
-var numMNNodes = process.argv[6];
-var txNodePrefix = process.argv[7];
-var numTXNodes = process.argv[8];
-var numConsortiumMembers = process.argv[9];
+var listenPort = process.argv[2]
+var gethIPCPath = process.argv[3];
+var coinbase = process.argv[4];
+var coinbasePw = process.argv[5];
+var mnNodePrefix = process.argv[6];
+var numMNNodes = process.argv[7];
+var txNodePrefix = process.argv[8];
+var numTXNodes = process.argv[9];
+var numConsortiumMembers = process.argv[10];
 
 /*
  * Constants
@@ -27,7 +28,7 @@ var gethRPCPort = "8545";
 var refreshInterval = 10000;
 
 var app = express();
-var web3 = new Web3(new Web3.providers.IpcProvider(gethIPCPath, require('net')));
+var web3IPC = new Web3(new Web3.providers.IpcProvider(gethIPCPath, require('net')));
 
 app.engine('handlebars', exphbs({defaultLayout: 'main'}));
 app.set('view engine', 'handlebars');
@@ -54,14 +55,14 @@ function getNodeInfo(hostName) {
     }
 
     try {
-      var web3nodeInfo = new Web3(new Web3.providers.HttpProvider("http://" + hostName + ":" + gethRPCPort));
+      var web3RPC = new Web3(new Web3.providers.HttpProvider("http://" + hostName + ":" + gethRPCPort));
     }
     catch(err) {
       console.log(err);
     }
     var web3PromiseArray = [];
     web3PromiseArray.push(new Promise(function(resolve, reject) {
-      web3nodeInfo.net.getPeerCount(function(error, result) {
+      web3RPC.net.getPeerCount(function(error, result) {
         if(!error)
         {
           resolve(result);
@@ -72,7 +73,7 @@ function getNodeInfo(hostName) {
       });
     }));
     web3PromiseArray.push(new Promise(function(resolve, reject) {
-      web3nodeInfo.eth.getBlockNumber(function(error, result) {
+      web3RPC.eth.getBlockNumber(function(error, result) {
         if(!error)
         {
           resolve(result);
@@ -160,10 +161,10 @@ app.get('/', function (req, res) {
 app.post('/', function(req, res) {
   var address = req.body.etherAddress;
 
-  if(web3.isAddress(address)) {
-    web3.personal.unlockAccount(coinbase, coinbasePw, function(err, res) {
+  if(web3IPC.isAddress(address)) {
+    web3IPC.personal.unlockAccount(coinbase, coinbasePw, function(err, res) {
       console.log(res);
-      web3.eth.sendTransaction({from: coinbase, to: address, value: web3.toWei(1000, 'ether')}, function(err, res){ console.log(address)});
+      web3IPC.eth.sendTransaction({from: coinbase, to: address, value: web3IPC.toWei(1000, 'ether')}, function(err, res){ console.log(address)});
     });
 
     req.session.isSent = true;
@@ -174,6 +175,6 @@ app.post('/', function(req, res) {
   res.redirect('/');
 });
 
-app.listen(3000, function () {
-  console.log('Admin webserver listening on port 3000!');
+app.listen(listenPort, function () {
+  console.log('Admin webserver listening on port ' + listenPort);
 });
