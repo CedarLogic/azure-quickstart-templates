@@ -36,7 +36,7 @@ contract Token {
         balances[msg.sender] = 1000000;
     }
 
-    function Transfer(address _to, uint _amount) {
+    function transfer(address _to, uint _amount) {
         if (balances[msg.sender] < _amount) {
             throw;
         }

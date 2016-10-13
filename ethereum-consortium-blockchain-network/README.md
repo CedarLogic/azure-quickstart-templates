@@ -14,7 +14,8 @@ For those of you new to the blockchain community, this is a great opportunity to
 
 While this article will not go into the details of the [Ethereum](https://www.ethereum.org/) protocol, implementations, architecture, or public network, it is still important to briefly describe a simplified application and network architecture better understand the different deployment topology options now available.  Ultimately, there is no single canonical network layout; it all depends on the use cases and stage within the development lifecycle.
 
-Similar to applications interacting with databases today, decentralized applications will communicate and execute logic against the Ethereum blockchain.  A private Ethereum network consists of a peer-to-peer decentralized network of nodes.  These nodes maintain a copy of the data store (i.e. distributed ledger) and run a virtual machine to support arbitrary computation against the ledger, while maintaining consensus. Smart contracts are the mechanism that allows for this complicated computation on the network, similar to stored procedures on traditional databases.  
+Similar to applications interacting with databases today, decentralized applications will communicate and execute logic against the Ethereum blockchain.  A private Ethereum network consists of a peer-to-peer decentralized network of nodes.  These nodes maintain a copy of the data store (i.e. distributed ledger) and run a virtual machine to support arbitrary computation against the ledger, while maintaining consensus. Smart contracts are the mechanism that allows for this complicated computation on the network, similar to stored procedures on traditional databases.
+
 Nodes are divided into mining and transaction nodes (non-mining nodes).  Transaction nodes maintain a copy of the distributed ledger, but are used to submit or look up transactions from the network.  Applications interact with these nodes using Ethereum’s web3 JavaScript object to execute and store important transactions within their application.  A wallet is usually backed by a transaction node on the public network.  Mining nodes process and commit transactions to the underlying distributed database (i.e. ledger) through a consensus process.
 
 ## Getting Started
@@ -25,6 +26,7 @@ Once you have a subscription, go to [Azure Quick Start Templates](https://azure.
 ![consortium network](images/azure1.png)
 
 Select the template that is returned in the search results to take you to the Deployment page and then the ‘Deploy to Azure’ button to take you to the Template deployment wizard in the Azure Portal.  Note, you will be prompted to sign into your account and Azure subscription in the process if you are not already logged in.  
+
 Once signed in, you land within the Template deployment wizard as shown below.  The template section is filled out with the main azuredeploy.json ARM template file.
 
 ![consortium network](images/azure2.png)
@@ -45,6 +47,7 @@ All nodes have the latest stable Go Ethereum (Geth) client software and are conf
 
 ## Transaction Nodes
 All consortium members share a set of load-balanced transaction nodes.  These nodes are reachable from outside the virtual network so that applications can use these nodes to submit transactions or execute smart contracts within the blockchain networks.  All nodes have the latest stable Go Ethereum (Geth) client software and are configured to maintain a complete copy of the distributed ledger.  
+
 We have explicitly separated the nodes that accept transactions from the nodes that mine transactions to ensure that the two actions are not competing for the same resources.  We have also load-balanced the transaction nodes to maintain high availability.
 
 ## Ethereum configuration
