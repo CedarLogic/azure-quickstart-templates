@@ -8,6 +8,9 @@
     "apiVersionNetworkInterfaces": {
       "type": "string"
     },
+    "apiVersionStorageAccounts": {
+      "type": "string"
+    },
     "loadBalancerBackendAddressPoolId": {
       "type": "string"
     },
@@ -92,6 +95,17 @@
       }
     },
     {
+      "apiVersion": "[parameters('apiVersionStorageAccounts')]",
+      "type": "Microsoft.Storage/storageAccounts",
+      "name": "[parameters('txStorageAcctName')]",
+      "location": "[resourceGroup().location]",
+      "sku": {
+        "name": "[parameters('storageAccountType')]"
+      },
+      "kind": "Storage",
+      "properties": {}
+    },
+    {
       "apiVersion": "[parameters('apiVersionVirtualMachines')]",
       "type": "Microsoft.Compute/virtualMachines",
       "name": "[concat(parameters('txVMNamePrefix'), copyIndex())]",
@@ -101,7 +115,8 @@
         "count": "[parameters('numTXNodes')]"
       },
       "dependsOn": [
-        "[concat('Microsoft.Network/networkInterfaces/', parameters('txNIPrefix'), copyIndex())]"
+        "[concat('Microsoft.Network/networkInterfaces/', parameters('txNIPrefix'), copyIndex())]",
+        "[concat('Microsoft.Storage/storageAccounts/', parameters('txStorageAcctName'))]"
       ],
       "properties": {
         "availabilitySet": {

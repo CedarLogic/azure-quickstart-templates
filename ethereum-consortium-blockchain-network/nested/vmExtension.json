@@ -104,36 +104,6 @@
       }
     },
     {
-      "type": "Microsoft.Compute/virtualMachines/extensions",
-      "name": "[concat(parameters('txVMNamePrefix'), copyIndex(), '/diagscript')]",
-      "apiVersion": "[variables('apiVersionVirtualMachinesExtensions')]",
-      "location": "[resourceGroup().location]",
-      "copy": {
-        "name": "txNodesDiagLoop",
-        "count": "[parameters('numTXNodes')]"
-      },
-      "properties": {
-        "publisher": "Microsoft.OSTCExtensions",
-        "type": "LinuxDiagnostic",
-        "typeHandlerVersion": "2.3",
-        "autoUpgradeMinorVersion": true,
-        "settings": {
-           "perfCfg":[
-              {
-                "query":"SELECT UsedMemory,AvailableMemory FROM SCX_MemoryStatisticalInformation","table":"Memory"
-              },
-              {
-                "query":"SELECT PercentIdleTime,PercentProcessorTime,PercentIOWaitTime FROM SCX_ProcessorStatisticalInformation WHERE IsAggregate = TRUE","table":"CPU"
-              }
-            ]
-        },
-        "protectedSettings": {
-          "storageAccountName": "[parameters('txStorageAcctName')]",
-          "storageAccountKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('txStorageAcctName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value]"
-        }
-      }
-    },
-    {
       "apiVersion": "[variables('apiVersionVirtualMachinesExtensions')]",
       "type": "Microsoft.Compute/virtualMachines/extensions",
       "name": "[concat(parameters('mnVMNamePrefix'), copyIndex(), '/newuserscript')]",
