@@ -21,11 +21,7 @@ Nodes are divided into mining and transaction nodes (non-mining nodes).  Transac
 ## Getting Started
 To begin, you will need an Azure subscription that can support deploying several virtual machines and standard storage accounts.  By default, most subscription types will support a small deployment topology without needing to increase quota.
 
-Once you have a subscription, go to [Azure Quick Start Templates](https://azure.microsoft.com/en-us/documentation/templates/) and search for “Ethereum Consortium Blockchain Network”.
-
-![consortium network](images/azure1.png)
-
-Select the template that is returned in the search results to take you to the Deployment page and then the ‘Deploy to Azure’ button to take you to the Template deployment wizard in the Azure Portal.  Note, you will be prompted to sign into your account and Azure subscription in the process if you are not already logged in.  
+Once you have a subscription, click the ‘Deploy to Azure’ button above to take you to the Template deployment wizard in the Azure Portal.  Note, you will be prompted to sign into your account and Azure subscription in the process if you are not already logged in.  
 
 Once signed in, you land within the Template deployment wizard as shown below.  The template section is filled out with the main azuredeploy.json ARM template file.
 
@@ -112,7 +108,7 @@ Once again, when the transaction is mined and committed into a block, the accoun
 
 Once you have an Ethereum account set up with some Ether, you can try deploying and interacting with smart contracts on your private blockchain. For this, we'll be using the Browser Solidity project, which integrates with Metamask and allows you to write smart contracts directly in your browser. Navigate [here](https://ethereum.github.io/browser-solidity/), and in the upper left click "New File".
 
-The sample code for this exercise can be found in the "sample-contracts.sol" file under the "scripts" directory of the GitHub repository. Copy and paste this code into the editor, and on the right you should see the compiled bytecode of your contracts, as well as buttons to create the contract on the blockchain or attach to an existing contract:
+The sample code for this exercise can be found in the "sample-contracts.sol" file [here](scripts/sample-contracts.sol). Copy and paste this code into the editor, and on the right you should see the compiled bytecode of your contracts, as well as buttons to create the contract on the blockchain or attach to an existing contract:
 
 ![consortium network](images/contracts1.png)
 
