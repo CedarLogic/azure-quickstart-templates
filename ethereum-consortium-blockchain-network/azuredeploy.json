@@ -9,17 +9,6 @@
       },
       "maxLength": 6
     },
-    "authType": {
-      "type": "string",
-      "defaultValue": "SSHKey",
-      "allowedValues": [
-        "Password",
-        "SSHKey"
-      ],
-      "metadata": {
-        "description": "Authorization type for SSH access to VMs"
-      }
-    },
     "adminUsername": {
       "type": "string",
       "defaultValue": "gethadmin",
@@ -29,16 +18,8 @@
     },
     "adminPassword": {
       "type": "securestring",
-      "defaultValue": "",
       "metadata": {
         "description": "Administrator password for each deployed VM"
-      }
-    },
-    "sshKey": {
-      "type": "string",
-      "defaultValue": "",
-      "metadata": {
-        "description": "SSH RSA public key file as a string"
       }
     },
     "ethereumAccountPsswd": {
@@ -196,6 +177,7 @@
     "apiVersionNetworkInterfaces": "2016-09-01",
     "apiVersionVirtualMachines": "2016-03-30",
     "apiVersionVirtualNetworks": "2016-09-01",
+    "authType": "Password",
     "namingInfix": "[toLower(substring(concat(parameters('namePrefix'), uniqueString(resourceGroup().id)), 0, 9))]",
     "availabilitySetName": "[concat(variables('namingInfix'), 'AvSet')]",
     "httpPort": 80,
@@ -313,17 +295,6 @@
   },
   "resources": [
     {
-      "apiVersion": "[variables('apiVersionStorageAccounts')]",
-      "type": "Microsoft.Storage/storageAccounts",
-      "name": "[variables('txStorageAcctName')]",
-      "location": "[resourceGroup().location]",
-      "sku": {
-        "name": "[parameters('storageAccountType')]"
-      },
-      "kind": "Storage",
-      "properties": {}
-    },
-    {
       "apiVersion": "[variables('apiVersionAvailabilitySets')]",
       "type": "Microsoft.Compute/availabilitySets",
       "name": "[variables('availabilitySetName')]",
@@ -359,6 +330,24 @@
       "location": "[resourceGroup().location]",
       "tags": {
         "displayName": "NSG - Mining (MN)"
+      },
+      "properties": {
+        "securityRules": [
+          {
+            "name": "block-bootnodes",
+            "properties": {
+              "description": "Block Internet Bootnodes",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "30303",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "Internet",
+              "access": "Deny",
+              "priority": 100,
+              "direction": "Outbound"
+            }
+          }
+        ]
       }
     },
     {
@@ -412,6 +401,20 @@
               "priority": 102,
               "direction": "Inbound"
             }
+          },
+          {
+            "name": "block-bootnodes",
+            "properties": {
+              "description": "Block Internet Bootnodes",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "30303",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "Internet",
+              "access": "Deny",
+              "priority": 100,
+              "direction": "Outbound"
+            }
           }
         ]
       }
@@ -440,19 +443,19 @@
       "type": "Microsoft.Resources/deployments",
       "dependsOn": [
         "[concat('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]",
-        "[concat('Microsoft.Storage/storageAccounts/', variables('txStorageAcctName'))]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('availabilitySetName'))]",
         "loadBalancerLinkedTemplate"
       ],
       "properties": {
         "mode": "incremental",
         "templateLink": {
-          "uri": "[concat(variables('artifactsLocationURL'), '/nested/txVMAuth', parameters('authType'), '.json')]",
+          "uri": "[concat(variables('artifactsLocationURL'), '/nested/txVMAuth', variables('authType'), '.json')]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
           "apiVersionVirtualMachines":{"value": "[variables('apiVersionVirtualMachines')]"},
           "apiVersionNetworkInterfaces":{"value": "[variables('apiVersionNetworkInterfaces')]"},
+          "apiVersionStorageAccounts":{"value": "[variables('apiVersionStorageAccounts')]"},
           "loadBalancerBackendAddressPoolId":{"value": "[reference('loadBalancerLinkedTemplate').outputs.backendAddressPoolID.value]"},
           "loadBalancerInboundNatRuleIDprefix":{"value": "[reference('loadBalancerLinkedTemplate').outputs.inboundNatRuleIDprefix.value]"},
           "txSubnetRef":{"value": "[variables('txSubnetRef')]"},
@@ -465,7 +468,6 @@
           "txNodeVMSize":{"value": "[parameters('txNodeVMSize')]"},
           "adminUsername":{"value": "[parameters('adminUsername')]"},
           "adminPassword":{"value": "[parameters('adminPassword')]"},
-          "sshKey":{"value": "[parameters('sshKey')]"},
           "ubuntuImage":{"value": "[variables('ubuntuImage')]"},
           "namingInfix":{"value": "[variables('namingInfix')]"}
         }
@@ -481,7 +483,7 @@
       "properties": {
         "mode": "incremental",
         "templateLink": {
-          "uri": "[concat(variables('artifactsLocationURL'), '/nested/mnVMAuth', parameters('authType'), '.json')]",
+          "uri": "[concat(variables('artifactsLocationURL'), '/nested/mnVMAuth', variables('authType'), '.json')]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
@@ -499,7 +501,6 @@
           "mnNodeVMSize":{"value": "[parameters('mnNodeVMSize')]"},
           "adminUsername":{"value": "[parameters('adminUsername')]"},
           "adminPassword":{"value": "[parameters('adminPassword')]"},
-          "sshKey":{"value": "[parameters('sshKey')]"},
           "ubuntuImage":{"value": "[variables('ubuntuImage')]"},
           "namingInfix":{"value": "[variables('namingInfix')]"}
         }
@@ -533,24 +534,6 @@
           "ethereumNetworkID":{"value": "[parameters('ethereumNetworkID')]"},
           "gethIPCPort":{"value": "[variables('gethIPCPort')]"},
           "adminSitePort":{"value": "[variables('adminSitePort')]"}
-        }
-      }
-    },
-    {
-      "apiVersion": "[variables('apiVersionDeployments')]",
-      "name": "networkSecurityGroupsLinkedTemplate",
-      "type": "Microsoft.Resources/deployments",
-      "dependsOn": [
-        "vmExtensionLinkedTemplate"
-      ],
-      "properties": {
-        "mode": "incremental",
-        "templateLink": {
-          "uri": "[concat(variables('artifactsLocationURL'), '/nested/networkSecurityGroups.json')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "name":{"value": "[variables('mnNsgName')]"}
         }
       }
     }
