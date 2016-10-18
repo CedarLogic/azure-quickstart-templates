@@ -168,7 +168,7 @@
     "apiVersionNetworkInterfaces": "2016-09-01",
     "apiVersionVirtualMachines": "2016-03-30",
     "apiVersionVirtualNetworks": "2016-09-01",
-    "authType": "Password",
+    "authType": "password",
     "storageAccountType": "Standard_LRS",
     "namingInfix": "[toLower(substring(concat(parameters('namePrefix'), uniqueString(resourceGroup().id)), 0, 9))]",
     "availabilitySetName": "[concat(variables('namingInfix'), 'AvSet')]",
@@ -178,6 +178,7 @@
     "sshNATFrontEndStartingPort": 3000,
     "gethRPCPort": 8545,
     "gethIPCPort": 30303,
+    "metricsStorageAcctName": "[concat(uniqueString(resourceGroup().id, variables('namingInfix')), 'metrics')]",
     "numMNNodes": "[mul(parameters('numConsortiumMembers'), parameters('numMiningNodesPerMember'))]",
     "maxVMsPerStorageAcct": 20,
     "mnStorageAcctCount": "[add(div(variables('numMNNodes'), variables('maxVMsPerStorageAcct')), 1)]",
@@ -439,9 +440,9 @@
         "loadBalancerLinkedTemplate"
       ],
       "properties": {
-        "mode": "incremental",
+        "mode": "Incremental",
         "templateLink": {
-          "uri": "[concat(variables('artifactsLocationURL'), '/nested/txVMAuth', variables('authType'), '.json')]",
+          "uri": "[concat(variables('artifactsLocationURL'), '/nested/txVMAuth', '-', variables('authType'), '.json')]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
@@ -460,6 +461,7 @@
           "txNodeVMSize":{"value": "[parameters('txNodeVMSize')]"},
           "adminUsername":{"value": "[parameters('adminUsername')]"},
           "adminPassword":{"value": "[parameters('adminPassword')]"},
+          "adminSSHKey":{"value": ""},
           "ubuntuImage":{"value": "[variables('ubuntuImage')]"},
           "namingInfix":{"value": "[variables('namingInfix')]"},
           "location":{"value": "[variables('location')]"}
@@ -474,9 +476,9 @@
         "[concat('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]"
       ],
       "properties": {
-        "mode": "incremental",
+        "mode": "Incremental",
         "templateLink": {
-          "uri": "[concat(variables('artifactsLocationURL'), '/nested/mnVMAuth', variables('authType'), '.json')]",
+          "uri": "[concat(variables('artifactsLocationURL'), '/nested/mnVMAuth', '-', variables('authType'), '.json')]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
@@ -494,6 +496,7 @@
           "mnNodeVMSize":{"value": "[parameters('mnNodeVMSize')]"},
           "adminUsername":{"value": "[parameters('adminUsername')]"},
           "adminPassword":{"value": "[parameters('adminPassword')]"},
+          "adminSSHKey":{"value": ""},
           "ubuntuImage":{"value": "[variables('ubuntuImage')]"},
           "namingInfix":{"value": "[variables('namingInfix')]"},
           "location":{"value": "[variables('location')]"}
@@ -509,7 +512,7 @@
         "mnVMLinkedTemplate"
       ],
       "properties": {
-        "mode": "incremental",
+        "mode": "Incremental",
         "templateLink": {
           "uri": "[concat(variables('artifactsLocationURL'), '/nested/vmExtension.json')]",
           "contentVersion": "1.0.0.0"
@@ -517,7 +520,6 @@
         "parameters": {
           "numBootNodes":{"value": "[parameters('numConsortiumMembers')]"},
           "txVMNamePrefix":{"value": "[variables('txVMNamePrefix')]"},
-          "txStorageAcctName":{"value": "[variables('txStorageAcctName')]"},
           "numTXNodes":{"value": "[parameters('numTXNodes')]"},
           "mnVMNamePrefix":{"value": "[variables('mnVMNamePrefix')]"},
           "numMNNodes":{"value": "[variables('numMNNodes')]"},
@@ -528,6 +530,8 @@
           "ethereumNetworkID":{"value": "[parameters('ethereumNetworkID')]"},
           "gethIPCPort":{"value": "[variables('gethIPCPort')]"},
           "adminSitePort":{"value": "[variables('adminSitePort')]"},
+          "metricsStorageAcctName":{"value": "[variables('metricsStorageAcctName')]"},
+          "apiVersionStorageAccounts":{"value": "[variables('apiVersionStorageAccounts')]"},
           "location":{"value": "[variables('location')]"}
         }
       }

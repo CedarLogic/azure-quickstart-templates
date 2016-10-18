@@ -8,9 +8,6 @@
     "txVMNamePrefix": {
       "type": "string"
     },
-    "txStorageAcctName": {
-      "type": "string"
-    },
     "numTXNodes": {
       "type": "int"
     },
@@ -41,6 +38,12 @@
     "adminSitePort": {
       "type": "int"
     },
+    "metricsStorageAcctName": {
+      "type": "string"
+    },
+    "apiVersionStorageAccounts": {
+      "type": "string"
+    },
     "location": {
       "type": "string"
     }
@@ -52,6 +55,17 @@
     "maxPeers": 25
   },
   "resources": [
+    {
+      "apiVersion": "[parameters('apiVersionStorageAccounts')]",
+      "type": "Microsoft.Storage/storageAccounts",
+      "name": "[parameters('metricsStorageAcctName')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Standard_LRS"
+      },
+      "kind": "Storage",
+      "properties": {}
+    },
     {
       "apiVersion": "[variables('apiVersionVirtualMachinesExtensions')]",
       "type": "Microsoft.Compute/virtualMachines/extensions",
@@ -101,8 +115,8 @@
             ]
         },
         "protectedSettings": {
-          "storageAccountName": "[parameters('txStorageAcctName')]",
-          "storageAccountKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('txStorageAcctName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value]"
+          "storageAccountName": "[parameters('metricsStorageAcctName')]",
+          "storageAccountKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('metricsStorageAcctName')), parameters('apiVersionStorageAccounts')).keys[0].value]"
         }
       }
     },
@@ -155,8 +169,8 @@
            ]
         },
         "protectedSettings": {
-          "storageAccountName": "[parameters('txStorageAcctName')]",
-          "storageAccountKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('txStorageAcctName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value]"
+          "storageAccountName": "[parameters('metricsStorageAcctName')]",
+          "storageAccountKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('metricsStorageAcctName')), parameters('apiVersionStorageAccounts')).keys[0].value]"
         }
       }
     }
