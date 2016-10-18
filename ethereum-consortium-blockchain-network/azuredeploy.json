@@ -5,7 +5,7 @@
     "namePrefix": {
       "type": "string",
       "metadata": {
-        "description": "String used as a base for naming resources (6 characters or less).  A unique hash is prepended to the string for some resources, while resource-specific information is appended.  (alphanumeric characters only)"
+        "description": "String used as a base for naming resources (6 alphanumeric characters or less).  A unique hash is prepended to the string for some resources, while resource-specific information is appended."
       },
       "maxLength": 6
     },

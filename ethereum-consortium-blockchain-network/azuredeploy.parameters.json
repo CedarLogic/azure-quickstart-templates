@@ -23,7 +23,7 @@
     "numConsortiumMembers": {
       "value": "2"
     },
-    "numAdditionalMiningNodesPerMember": {
+    "numMiningNodesPerMember": {
       "value": "1"
     },
     "mnNodeVMSize": {
