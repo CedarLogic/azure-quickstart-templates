@@ -159,6 +159,8 @@
     }
   },
   "variables": {
+    "location": "resourceGroup().location",
+    "artifactsLocationURL": "https://raw.githubusercontent.com/sidkri/azure-quickstart-templates/sidkri-marketplace-specific-changes/ethereum-consortium-blockchain-network",
     "apiVersionDeployments": "2016-09-01",
     "apiVersionStorageAccounts": "2016-01-01",
     "apiVersionAvailabilitySets": "2016-03-30",
@@ -280,15 +282,14 @@
       "offer": "UbuntuServer",
       "sku": "14.04.5-LTS",
       "version": "latest"
-    },
-    "artifactsLocationURL": "https://raw.githubusercontent.com/sidkri/azure-quickstart-templates/ethereum-consortium-10-03-RC/ethereum-consortium-blockchain-network"
+    }
   },
   "resources": [
     {
       "apiVersion": "[variables('apiVersionAvailabilitySets')]",
       "type": "Microsoft.Compute/availabilitySets",
       "name": "[variables('availabilitySetName')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "properties": {}
     },
     {
@@ -309,7 +310,8 @@
           "backendPort2":{"value": "[variables('gethRPCPort')]"},
           "numInboundNATRules":{"value": "[parameters('numTXNodes')]"},
           "inboundNATRuleFrontendStartingPort":{"value": "[variables('sshNATFrontEndStartingPort')]"},
-          "inboundNATRuleBackendPort":{"value": "[variables('sshPort')]"}
+          "inboundNATRuleBackendPort":{"value": "[variables('sshPort')]"},
+          "location":{"value": "[variables('location')]"}
         }
       }
     },
@@ -317,7 +319,7 @@
       "apiVersion": "[variables('apiVersionNetworkSecurityGroups')]",
       "type": "Microsoft.Network/networkSecurityGroups",
       "name": "[variables('mnNsgName')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "tags": {
         "displayName": "NSG - Mining (MN)"
       },
@@ -344,7 +346,7 @@
       "apiVersion": "[variables('apiVersionNetworkSecurityGroups')]",
       "type": "Microsoft.Network/networkSecurityGroups",
       "name": "[variables('txNsgName')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "tags": {
         "displayName": "NSG - Transaction (TX)"
       },
@@ -413,7 +415,7 @@
       "apiVersion": "[variables('apiVersionVirtualNetworks')]",
       "type": "Microsoft.Network/virtualNetworks",
       "name": "[variables('virtualNetworkName')]",
-      "location": "[resourceGroup().location]",
+      "location": "[variables('location')]",
       "dependsOn": [
         "[concat('Microsoft.Network/networkSecurityGroups/', variables('txNsgName'))]",
         "[concat('Microsoft.Network/networkSecurityGroups/', variables('mnNsgName'))]"
@@ -459,7 +461,8 @@
           "adminUsername":{"value": "[parameters('adminUsername')]"},
           "adminPassword":{"value": "[parameters('adminPassword')]"},
           "ubuntuImage":{"value": "[variables('ubuntuImage')]"},
-          "namingInfix":{"value": "[variables('namingInfix')]"}
+          "namingInfix":{"value": "[variables('namingInfix')]"},
+          "location":{"value": "[variables('location')]"}
         }
       }
     },
@@ -492,7 +495,8 @@
           "adminUsername":{"value": "[parameters('adminUsername')]"},
           "adminPassword":{"value": "[parameters('adminPassword')]"},
           "ubuntuImage":{"value": "[variables('ubuntuImage')]"},
-          "namingInfix":{"value": "[variables('namingInfix')]"}
+          "namingInfix":{"value": "[variables('namingInfix')]"},
+          "location":{"value": "[variables('location')]"}
         }
       }
     },
@@ -523,7 +527,8 @@
           "ethereumAccountPassphrase": {"value": "[parameters('ethereumAccountPassphrase')]"},
           "ethereumNetworkID":{"value": "[parameters('ethereumNetworkID')]"},
           "gethIPCPort":{"value": "[variables('gethIPCPort')]"},
-          "adminSitePort":{"value": "[variables('adminSitePort')]"}
+          "adminSitePort":{"value": "[variables('adminSitePort')]"},
+          "location":{"value": "[variables('location')]"}
         }
       }
     }

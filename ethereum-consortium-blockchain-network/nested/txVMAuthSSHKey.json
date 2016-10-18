@@ -55,6 +55,9 @@
     },
     "namingInfix": {
       "type": "string"
+    },
+    "location": {
+      "type": "string"
     }
   },
   "variables": {
@@ -65,7 +68,7 @@
       "apiVersion": "[parameters('apiVersionNetworkInterfaces')]",
       "type": "Microsoft.Network/networkInterfaces",
       "name": "[concat(parameters('txNIPrefix'), copyindex())]",
-      "location": "[resourceGroup().location]",
+      "location": "[parameters('location')]",
       "copy": {
         "name": "txNicLoop",
         "count": "[parameters('numTXNodes')]"
@@ -98,7 +101,7 @@
       "apiVersion": "[parameters('apiVersionStorageAccounts')]",
       "type": "Microsoft.Storage/storageAccounts",
       "name": "[parameters('txStorageAcctName')]",
-      "location": "[resourceGroup().location]",
+      "location": "[parameters('location')]",
       "sku": {
         "name": "[parameters('storageAccountType')]"
       },
@@ -109,7 +112,7 @@
       "apiVersion": "[parameters('apiVersionVirtualMachines')]",
       "type": "Microsoft.Compute/virtualMachines",
       "name": "[concat(parameters('txVMNamePrefix'), copyIndex())]",
-      "location": "[resourceGroup().location]",
+      "location": "[parameters('location')]",
       "copy": {
         "name": "txVMLoop",
         "count": "[parameters('numTXNodes')]"

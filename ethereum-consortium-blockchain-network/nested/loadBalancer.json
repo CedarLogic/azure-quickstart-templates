@@ -25,6 +25,9 @@
     },
     "inboundNATRuleBackendPort": {
       "type": "int"
+    },
+    "location": {
+      "type": "string"
     }
   },
   "variables": {
@@ -46,7 +49,7 @@
       "apiVersion": "[variables('apiVersionPublicIPAddresses')]",
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "[variables('lbPublicIPAddressName')]",
-      "location": "[resourceGroup().location]",
+      "location": "[parameters('location')]",
       "properties": {
         "publicIPAllocationMethod": "Dynamic",
         "dnsSettings": {
@@ -58,7 +61,7 @@
       "apiVersion": "[variables('apiVersionLoadBalancers')]",
       "name": "[variables('lbName')]",
       "type": "Microsoft.Network/loadBalancers",
-      "location": "[resourceGroup().location]",
+      "location": "[parameters('location')]",
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('lbPublicIPAddressName'))]"
       ],
@@ -144,7 +147,7 @@
       "apiVersion": "[variables('apiVersionLoadBalanceInboundNATRules')]",
       "type": "Microsoft.Network/loadBalancers/inboundNatRules",
       "name": "[concat(variables('lbName'), '/', variables('loadBalancerInboundNatRuleNamePart'), copyIndex())]",
-      "location": "[resourceGroup().location]",
+      "location": "[parameters('location')]",
       "copy": {
         "name": "lbNatLoop",
         "count": "[parameters('numInboundNATRules')]"
