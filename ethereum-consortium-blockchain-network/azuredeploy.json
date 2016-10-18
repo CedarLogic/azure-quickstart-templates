@@ -159,7 +159,7 @@
     }
   },
   "variables": {
-    "location": "resourceGroup().location",
+    "location": "[resourceGroup().location]",
     "artifactsLocationURL": "https://raw.githubusercontent.com/sidkri/azure-quickstart-templates/sidkri-marketplace-specific-changes/ethereum-consortium-blockchain-network",
     "apiVersionDeployments": "2016-09-01",
     "apiVersionStorageAccounts": "2016-01-01",
