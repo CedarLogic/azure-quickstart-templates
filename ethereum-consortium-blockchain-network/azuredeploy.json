@@ -298,7 +298,7 @@
       "name": "loadBalancerLinkedTemplate",
       "type": "Microsoft.Resources/deployments",
       "properties": {
-        "mode": "incremental",
+        "mode": "Incremental",
         "templateLink": {
           "uri": "[concat(variables('artifactsLocationURL'), '/nested/loadBalancer.json')]",
           "contentVersion": "1.0.0.0"
