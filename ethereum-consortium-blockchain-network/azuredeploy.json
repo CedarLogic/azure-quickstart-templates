@@ -14,7 +14,8 @@
       "defaultValue": "gethadmin",
       "metadata": {
         "description": "Administrator username of each deployed VM (alphanumeric characters only)"
-      }
+      },
+      "maxLength": 8
     },
     "adminPassword": {
       "type": "securestring",
